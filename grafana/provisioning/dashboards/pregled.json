@@ -1,0 +1,293 @@
+{
+  "uid": "domovina-pregled",
+  "title": "DOMOVINA.ai — pregled",
+  "timezone": "Europe/Zagreb",
+  "refresh": "10s",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "schemaVersion": 39,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Online sada",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT count() AS online FROM analytics.online_now WHERE app = 'domovina.ai'"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Danas: korisnika",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 4,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT uniqExact(if(user_id != '', user_id, device_id)) FROM analytics.events WHERE app = 'domovina.ai' AND toDate(ts, 'Europe/Zagreb') = today()"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Danas: sesija",
+      "type": "stat",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 8,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT uniqExact(session_id) FROM analytics.events WHERE app = 'domovina.ai' AND toDate(ts, 'Europe/Zagreb') = today()"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Tko je sada u aplikaciji",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 0,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT who, user_id != '' AS prijavljen, platform, route, video_id, country, city, last_seen FROM analytics.online_now WHERE app = 'domovina.ai' ORDER BY last_seen DESC"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Aktivni korisnici (po satu)",
+      "type": "timeseries",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 0,
+          "queryType": "timeseries",
+          "rawSql": "SELECT $__timeInterval(ts) AS time, platform, uniqExact(if(user_id != '', user_id, device_id)) AS users FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) GROUP BY time, platform ORDER BY time"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Najgledanije epizode",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT video_id, count() AS prikazi, uniqExact(if(user_id != '', user_id, device_id)) AS korisnika FROM analytics.events WHERE app = 'domovina.ai' AND event = 'screen_view' AND video_id != '' AND $__timeFilter(ts) GROUP BY video_id ORDER BY prikazi DESC LIMIT 50"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Ekrani",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 10,
+        "w": 12,
+        "h": 14
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT route, count() AS prikazi FROM analytics.events WHERE app = 'domovina.ai' AND event = 'screen_view' AND $__timeFilter(ts) GROUP BY route ORDER BY prikazi DESC LIMIT 50"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Platforme i preglednici",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT platform, browser, os, uniqExact(device_id) AS uredaja FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) GROUP BY platform, browser, os ORDER BY uredaja DESC"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Države i gradovi",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 24,
+        "w": 12,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT country, city, uniqExact(device_id) AS uredaja FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) GROUP BY country, city ORDER BY uredaja DESC LIMIT 50"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Odakle dolaze (referrer, utm)",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 32,
+        "w": 24,
+        "h": 8
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT JSONExtractString(props, 'referrer') AS referrer, JSONExtractString(props, 'utm_source') AS utm_source, count() AS sesija FROM analytics.events WHERE app = 'domovina.ai' AND event = 'session_start' AND $__timeFilter(ts) GROUP BY referrer, utm_source ORDER BY sesija DESC LIMIT 50"
+        }
+      ]
+    }
+  ]
+}

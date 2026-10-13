@@ -1,0 +1,25 @@
+<!-- Dijelimo VM sa Supabaseom, domovina-rag ClickHouseom, Meilijem i ostalima
+     (23 GB ukupno). Analitika dobiva strop od ~3 GB; ClickHouse pod tim
+     stropom odbije upit umjesto da pojede RAM susjedima. -->
+<clickhouse>
+    <max_server_memory_usage>3221225472</max_server_memory_usage>
+    <mark_cache_size>268435456</mark_cache_size>
+    <uncompressed_cache_size>0</uncompressed_cache_size>
+    <!-- Sistemski logovi su najveći tihi potrošač diska na malom serveru. -->
+    <query_log replace="1">
+        <database>system</database>
+        <table>query_log</table>
+        <ttl>event_date + INTERVAL 7 DAY</ttl>
+        <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+    </query_log>
+    <trace_log remove="1"/>
+    <text_log remove="1"/>
+    <metric_log remove="1"/>
+    <asynchronous_metric_log remove="1"/>
+    <processors_profile_log remove="1"/>
+    <part_log remove="1"/>
+    <logger>
+        <level>warning</level>
+        <console>1</console>
+    </logger>
+</clickhouse>

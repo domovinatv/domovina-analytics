@@ -1,0 +1,20 @@
+{
+  "name": "domovina-analytics",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vlastita analitika događaja: Cloudflare Worker ingest → ClickHouse na Coolifyju",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260701.1",
+    "typescript": "^5.7.0",
+    "vitest": "3.2.4",
+    "wrangler": "4.107.0"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "domovina-analytics",
+  "main": "src/index.ts",
+  "account_id": "7dc7167b7e2e00923bfa7cd697df14e4",
+  "compatibility_date": "2026-07-01",
+  "workers_dev": false,
+  "observability": { "enabled": true },
+
+  // Ingest živi na ISTOM originu kao aplikacija (domovina.ai), ne na
+  // poddomeni: prvostranački zahtjev bez riječi s filter popisa (EasyList,
+  // EasyPrivacy, Brave) ne blokira nijedan adblocker, a nema ni CORS-a ni
+  // COEP problema. Route ima prednost pred Pages projektom na istom hostu.
+  // Putanja mora biti ista kao INGEST_PATH ispod i kao `Endpoints.events`
+  // u podcast_core.
+  "routes": [
+    { "pattern": "domovina.ai/api/state", "zone_name": "domovina.ai" }
+  ],
+
+  "vars": {
+    "INGEST_PATH": "/api/state",
+    "ALLOWED_ORIGINS": "https://domovina.ai,https://www.domovina.ai,http://localhost:*,http://127.0.0.1:*",
+    // ClickHouse HTTP iza Cloudflare Tunnela (+ Access service token).
+    "CH_URL": "https://ch-ingest.domovina.ai",
+    "CH_USER": "ingest"
+  },
+  // Tajne (wrangler secret put): CH_PASSWORD, CF_ACCESS_CLIENT_ID,
+  // CF_ACCESS_CLIENT_SECRET.
+
+  // Rezerva kad ClickHouse ne odgovori. Retry s odgodom, nakon 5 pokušaja DLQ.
+  "queues": {
+    "producers": [{ "binding": "BUFFER", "queue": "domovina-analytics-buffer" }],
+    "consumers": [
+      {
+        "queue": "domovina-analytics-buffer",
+        "max_batch_size": 100,
+        "max_batch_timeout": 30,
+        "max_retries": 5,
+        "dead_letter_queue": "domovina-analytics-dlq"
+      }
+    ]
+  },
+
+  // Ograda troškova: klijent flusha najviše jednom u 30 s, pa je 20/min po
+  // uređaju (ili IP-u kad uređaja nema) i desetak puta više od normale.
+  "ratelimits": [
+    { "name": "LIMITER", "namespace_id": "4401", "simple": { "limit": 20, "period": 60 } }
+  ]
+}
