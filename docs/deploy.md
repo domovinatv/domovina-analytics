@@ -80,8 +80,17 @@ Bug koji šalje previše vidi se isti dan, ne na računu (`docs/troskovi.md`).
 ## 5. Klijent
 
 U `domovina.ai`: `Endpoints.events` je već postavljen u
-`packages/podcast_core/lib/brand/domovina_brand.dart`. Deploy weba
-(`./scripts/deploy.sh` s `main`) i sljedeći nightly za iOS i Android.
+`packages/podcast_core/lib/brand/domovina_brand.dart`, a klijent je na `main`
+od `d9b35db`. Deploy weba (`./scripts/deploy.sh` s `main`) i sljedeći nightly za iOS i Android.
+
+Dok ovaj Worker ne postoji, produkcija na `POST /api/state` vraća **200 s
+HTML-om** (SPA fallback u `web/_worker.js`). Klijent to čita kao uspjeh i
+batch baci: nema štete ni ponavljanja, ali se ništa ne broji (izmjereno 14. 10. 2026.).
+
+**Otvoreno prije produkcije: politika privatnosti.** Odluka je „praćenje
+svima od prvog pokretanja, opisano u politici privatnosti” (`user_id` +
+trajni `device_id`, bez consent bannera), ali pravni tekst u aplikaciji
+to još ne spominje.
 
 Provjera u **Braveu sa Shields uključenim**: DevTools → Network →
 `api/state` mora imati status 204, a ne `(blocked:other)`.
