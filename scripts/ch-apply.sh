@@ -11,14 +11,15 @@ set -euo pipefail
 SSH_KEY="${SSH_KEY:-$HOME/.ssh/dom-001-oracle-ssh-key-2026-04-20.key}"
 HOST="${HOST:-ubuntu@89.168.100.120}"
 
-# Na istom serveru je i ClickHouse od domovina-rag (24.10); naš je 25.8 i
-# jedini nosi CH_INGEST_PASSWORD u okolini.
+# Na istom serveru je i ClickHouse od domovina-rag (24.10). Naš je image
+# lokalni build (Coolify ga imenuje po resursu), pa se traži po okolini:
+# jedini nosi CH_INGEST_PASSWORD i apply.sh.
 ssh -i "$SSH_KEY" "$HOST" CH_CONTAINER="${CH_CONTAINER:-}" 'bash -s' <<'REMOTE'
 set -euo pipefail
 c="$CH_CONTAINER"
 if [ -z "$c" ]; then
-  for id in $(docker ps -q --filter ancestor=clickhouse/clickhouse-server:25.8); do
-    if docker exec "$id" sh -c 'test -n "$CH_INGEST_PASSWORD"' 2>/dev/null; then c="$id"; break; fi
+  for id in $(docker ps -q); do
+    if docker exec "$id" sh -c 'test -n "$CH_INGEST_PASSWORD" && test -x /docker-entrypoint-initdb.d/apply.sh' 2>/dev/null; then c="$id"; break; fi
   done
 fi
 [ -n "$c" ] || { echo "Nisam našao analytics ClickHouse kontejner" >&2; exit 2; }
