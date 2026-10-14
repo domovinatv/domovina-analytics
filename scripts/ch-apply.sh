@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Primijeni clickhouse/sql/*.sql i korisnike na produkcijskom ClickHouseu.
 #
-# SQL datoteke su u kontejner montirane iz repoa, pa redoslijed mora biti:
+# SQL datoteke su ugrađene u image, pa redoslijed mora biti:
 # git push → Coolify Redeploy → ovaj skript. (Entrypoint ih sam izvrši SAMO
 # na praznom volumenu, tj. pri prvom deployu.)
 #

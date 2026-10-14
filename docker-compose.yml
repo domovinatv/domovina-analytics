@@ -2,12 +2,16 @@
 # /docker-compose.yml. Javni hostnamei idu kroz Cloudflare Tunnel → Traefik
 # (vidi docs/deploy.md); nijedan port nije bindan na host.
 #
+# Datoteke iz repoa (shema, provisioning) su ugrađene u image kroz `build:`,
+# ne montirane: Coolify ih ne kopira na host, pa bind mount postane prazna
+# mapa. Promjena SQL-a ili dashboarda = Redeploy (pa scripts/ch-apply.sh).
+#
 # Lokalno: `docker compose up` uz docker-compose.override.yml (portovi na
 # localhost). Coolify override ignorira jer deploya s eksplicitnim -f.
 
 services:
   clickhouse:
-    image: clickhouse/clickhouse-server:25.8
+    build: ./clickhouse
     environment:
       CLICKHOUSE_DB: analytics
       CLICKHOUSE_USER: admin
@@ -17,9 +21,6 @@ services:
       CH_READER_PASSWORD: ${CH_READER_PASSWORD:?}
     volumes:
       - ch_data:/var/lib/clickhouse
-      - ./clickhouse/apply.sh:/docker-entrypoint-initdb.d/apply.sh:ro
-      - ./clickhouse/sql:/analytics/sql:ro
-      - ./clickhouse/config.d/memory.xml:/etc/clickhouse-server/config.d/memory.xml:ro
     expose:
       - "8123"
     ulimits:
@@ -32,7 +33,7 @@ services:
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:12.4.11
+    build: ./grafana
     depends_on:
       clickhouse: { condition: service_healthy }
     environment:
@@ -47,7 +48,6 @@ services:
       CH_READER_PASSWORD: ${CH_READER_PASSWORD:?}
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./grafana/provisioning:/etc/grafana/provisioning:ro
     expose:
       - "3000"
     restart: unless-stopped

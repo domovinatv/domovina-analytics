@@ -47,7 +47,7 @@ Grafana (Coolify) ◄── korisnik `reader`, read-only ────┘
 
 ```bash
 cp .env.example .env            # popuni: openssl rand -hex 16
-docker compose up -d            # ClickHouse :8123, Grafana :3000 (override = localhost portovi)
+docker compose up -d --build    # ClickHouse :8123, Grafana :3000 (override = localhost portovi)
 npm install
 printf 'CH_URL=http://127.0.0.1:8123\nCH_PASSWORD=<CH_INGEST_PASSWORD>\n' > .dev.vars
 npx wrangler dev --port 8787    # Worker + lokalni Queue
