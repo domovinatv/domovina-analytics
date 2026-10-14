@@ -14,10 +14,20 @@ GitHub repoom).
 - Env (sve osim zadnjeg označi kao **Secret**; generiraj s `openssl rand -hex 24`):
   `CH_ADMIN_PASSWORD`, `CH_INGEST_PASSWORD`, `CH_READER_PASSWORD`,
   `GRAFANA_ADMIN_PASSWORD`, `GRAFANA_ROOT_URL=https://analitika.domovina.ai`.
-- Domene servisa: `clickhouse` → `https://ch-ingest.domovina.ai:8123`,
-  `grafana` → `https://analitika.domovina.ai:3000`.
+- Domene servisa: `clickhouse` → `http://ch-ingest.domovina.ai:8123`,
+  `grafana` → `http://analitika.domovina.ai:3000`. **`http://`, ne
+  `https://`**, kao `search.domovina.ai`: TLS završava na Cloudflareu, a uz
+  `https://` Traefik na portu 80 vraća redirect na isti URL.
+- Datoteke iz repoa su ugrađene u image (`build:` u composeu). Coolify za
+  Compose resurs ne kopira repo na host, pa je bind mount `./clickhouse/apply.sh`
+  u kontejneru bio prazna mapa (`apply.sh: Is a directory`, 14. 10. 2026.).
 - **Deploy.** Env se aktivira samo kroz Redeploy, ne kroz Restart.
-- Provjera na serveru: entrypoint je izvršio `apply.sh`.
+- Nakon deploya **uvijek** `./scripts/ch-apply.sh`: entrypoint izvrši
+  `apply.sh` samo na praznom volumenu, a idempotentan je.
+- Lozinke su u `.local-secrets.env` (gitignored), uz `COOLIFY_APP_UUID`.
+  Coolify API ih vraća prazne (token nema `read:sensitive`), pa se provjerava
+  prijava u kontejneru, ne API.
+- Provjera na serveru:
 
   ```bash
   ssh -i ~/.ssh/dom-001-oracle-ssh-key-2026-04-20.key ubuntu@89.168.100.120 \
@@ -26,21 +36,28 @@ GitHub repoom).
 
 ## 2. Cloudflare Tunnel + Access
 
-Postojeći tunel (`01a25a60-…`) → Public Hostnames, isti obrazac kao
-`search.domovina.ai`. cloudflared prema Traefiku ide preko HTTP-a, ne HTTPS-a.
+**Redoslijed: Access prije hostnamea**, inače je ClickHouse HTTP na tren
+javan. Postojeći tunel `domovina-001-coolify-oracle` (`01a25a60-…`), isti
+obrazac kao ostali hostovi u njemu, uz proxied CNAME na
+`01a25a60-….cfargotunnel.com`:
 
 | hostname | service |
 |---|---|
-| `ch-ingest.domovina.ai` | `http://traefik:80` |
-| `analitika.domovina.ai` | `http://traefik:80` |
+| `ch-ingest.domovina.ai` | `http://localhost:80` |
+| `analitika.domovina.ai` | `http://localhost:80` |
 
 Zero Trust → Access → Applications:
 
 - **`ch-ingest.domovina.ai`**: policy *Service Auth* sa service tokenom
-  `domovina-analytics-worker`. Client ID i Secret idu u Worker (korak 3).
-  Bez tokena ClickHouse HTTP nije dostupan s interneta, čak ni uz lozinku.
-- **`analitika.domovina.ai`**: policy *Allow* za tvoju e-poštu. Grafana
-  login je drugi sloj.
+  `domovina-analytics-worker` (trajanje `forever`: istekao token bi tiho
+  slao sve u Queue pa u DLQ). Client ID i Secret idu izravno u Worker
+  secrets i nisu nigdje drugdje zapisani; za rotaciju napravi novi token.
+  Bez tokena ClickHouse HTTP vraća 403, čak ni uz lozinku.
+- **`analitika.domovina.ai`**: policy *Allow* za `stepanic.matija@gmail.com`
+  i `ms@ff.hr`. Grafana login je drugi sloj.
+
+Stanje 14. 10. 2026.: oboje napravljeno kroz dashboard API (Cloudflare token
+iz `domovina-rag` ne vidi tunele ni Access).
 
 ## 3. Worker
 
@@ -68,9 +85,9 @@ curl -si -X POST https://domovina.ai/api/state -A 'Mozilla/5.0' \
 Pa u ClickHouseu (Grafana → Explore):
 `SELECT * FROM analytics.events WHERE event = 'deploy_probe'`.
 
-Ako route **ne** hvata, rezerva je service binding iz `web/_worker.js` na
-ovaj Worker, uz prosljeđivanje samo te putanje. To se zasad ne radi jer
-dodaje vezu između repoa.
+**Izmjereno 14. 10. 2026.: route hvata.** Probe je vratio 204 i red
+`deploy_probe` je sjeo u ClickHouse, a `GET /` i dalje servira Pages. Service
+binding iz `web/_worker.js` ne treba.
 
 ## 4. Ograda troškova
 
