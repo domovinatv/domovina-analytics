@@ -382,7 +382,8 @@
           },
           "color": {
             "mode": "palette-classic"
-          }
+          },
+          "displayName": "${__field.labels.vrsta}"
         },
         "overrides": []
       },

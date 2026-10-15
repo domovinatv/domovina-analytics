@@ -562,12 +562,58 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic-by-name"
+            "mode": "fixed",
+            "fixedColor": "#8f8f8f"
           },
           "custom": {
             "fillOpacity": 80,
             "lineWidth": 0
-          }
+          },
+          "mappings": [
+            {
+              "type": "regex",
+              "options": {
+                "pattern": "^/(v|m|yt)/.*",
+                "result": {
+                  "color": "purple",
+                  "index": 0
+                }
+              }
+            },
+            {
+              "type": "regex",
+              "options": {
+                "pattern": "^/p/.*",
+                "result": {
+                  "color": "orange",
+                  "index": 1
+                }
+              }
+            },
+            {
+              "type": "regex",
+              "options": {
+                "pattern": "^/c/.*",
+                "result": {
+                  "color": "green",
+                  "index": 2
+                }
+              }
+            },
+            {
+              "type": "value",
+              "options": {
+                "/": {
+                  "color": "blue",
+                  "index": 3
+                },
+                "(pozadina)": {
+                  "color": "#3a3a3a",
+                  "index": 4
+                }
+              }
+            }
+          ]
         },
         "overrides": []
       },

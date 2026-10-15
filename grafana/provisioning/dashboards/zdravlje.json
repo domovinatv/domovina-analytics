@@ -383,7 +383,8 @@
           },
           "color": {
             "mode": "palette-classic"
-          }
+          },
+          "displayName": "${__field.labels.event}"
         },
         "overrides": []
       },
@@ -500,7 +501,8 @@
           },
           "color": {
             "mode": "palette-classic"
-          }
+          },
+          "displayName": "${__field.labels.verzija}"
         },
         "overrides": []
       },

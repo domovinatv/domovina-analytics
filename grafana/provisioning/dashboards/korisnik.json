@@ -743,7 +743,8 @@
           },
           "color": {
             "mode": "palette-classic"
-          }
+          },
+          "displayName": "${__field.labels.event}"
         },
         "overrides": []
       },

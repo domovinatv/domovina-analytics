@@ -504,7 +504,8 @@
           },
           "color": {
             "mode": "palette-classic"
-          }
+          },
+          "displayName": "${__field.labels.platform}"
         },
         "overrides": []
       },

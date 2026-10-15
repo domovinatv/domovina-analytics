@@ -185,7 +185,7 @@ def table(title, sql, w=12, h=10, desc=None, heat=None, sort=None, filterable=Tr
     )
 
 
-def timeseries(title, sql, w=12, h=8, desc=None, bars=False, stack=False, unit=None):
+def timeseries(title, sql, w=12, h=8, desc=None, bars=False, stack=False, unit=None, series=None):
     custom = {
         "drawStyle": "bars" if bars else "line",
         "lineWidth": 2,
@@ -197,6 +197,9 @@ def timeseries(title, sql, w=12, h=8, desc=None, bars=False, stack=False, unit=N
         "axisSoftMin": 0,
     }
     d = {"custom": custom, "color": {"mode": "palette-classic"}}
+    if series:
+        # Niz nazvan po vrijednosti stupca (npr. „web”), bez imena mjere ispred.
+        d["displayName"] = "${__field.labels.%s}" % series
     if unit:
         d["unit"] = unit
     return panel(
@@ -253,7 +256,17 @@ def state_timeline(title, sql, w=24, h=6, desc=None):
             "legend": {"showLegend": False},
             "tooltip": {"mode": "single"},
         },
-        defaults={"color": {"mode": "palette-classic-by-name"}, "custom": {"fillOpacity": 80, "lineWidth": 0}},
+        defaults={
+            "color": {"mode": "fixed", "fixedColor": "#8f8f8f"},
+            "custom": {"fillOpacity": 80, "lineWidth": 0},
+            # Boja po vrsti ekrana; tekst ostaje ruta.
+            "mappings": [
+                {"type": "regex", "options": {"pattern": "^/(v|m|yt)/.*", "result": {"color": "purple", "index": 0}}},
+                {"type": "regex", "options": {"pattern": "^/p/.*", "result": {"color": "orange", "index": 1}}},
+                {"type": "regex", "options": {"pattern": "^/c/.*", "result": {"color": "green", "index": 2}}},
+                {"type": "value", "options": {"/": {"color": "blue", "index": 3}, "(pozadina)": {"color": "#3a3a3a", "index": 4}}},
+            ],
+        },
     )
 
 
@@ -339,7 +352,7 @@ def pregled():
               w=12, h=10, desc="Klik na korisnika otvara njegov profil."),
         timeseries("Aktivni korisnici",
                    f"SELECT $__timeInterval(ts) AS time, platform, uniqExact({WHO}) AS users FROM analytics.events WHERE {APP} AND $__timeFilter(ts) GROUP BY time, platform ORDER BY time",
-                   w=12, h=6),
+                   w=12, h=6, series="platform"),
         table("Najgledanije epizode",
               f"SELECT video_id, count() AS prikazi, uniqExact({WHO}) AS korisnika FROM analytics.events WHERE {APP} AND event = 'screen_view' AND video_id != '' AND $__timeFilter(ts) GROUP BY video_id ORDER BY prikazi DESC LIMIT 50",
               w=12, h=10),
@@ -421,7 +434,7 @@ def korisnik():
               w=24, h=5, filterable=False),
         timeseries("Aktivnost po danu",
                    f"SELECT toStartOfDay(ts, 'Europe/Zagreb') AS time, event, count() AS n FROM analytics.events WHERE {tr} GROUP BY time, event ORDER BY time",
-                   w=12, h=8, bars=True, stack=True),
+                   w=12, h=8, bars=True, stack=True, series="event"),
         table("Kada je aktivan (dan u tjednu × sat)",
               f"SELECT ['pon','uto','sri','čet','pet','sub','ned'][toDayOfWeek(ts, 0, 'Europe/Zagreb')] AS dan, {hours}"
               f" FROM analytics.events WHERE {tr} GROUP BY toDayOfWeek(ts, 0, 'Europe/Zagreb') AS d, dan ORDER BY d",
@@ -503,7 +516,7 @@ def sadrzaj():
         stat("Prikaza ekrana", f"SELECT count() FROM {sv}"),
         timeseries("Otvaranja po vrsti ekrana",
                    f"SELECT $__timeInterval(ts) AS time, {SCREEN_KIND} AS vrsta, count() AS n FROM {sv} GROUP BY time, vrsta ORDER BY time",
-                   w=24, h=8, bars=True, stack=True),
+                   w=24, h=8, bars=True, stack=True, series="vrsta"),
         table("Epizode",
               "SELECT vid AS video_id, countIf(event = 'screen_view') AS otvaranja, uniqExact(" + WHO + ") AS gledatelja,"
               " sum(dwell_s) AS vrijeme_ukupno, round(sum(dwell_s) / greatest(uniqExact(" + WHO + "), 1)) AS vrijeme_po_korisniku,"
@@ -551,7 +564,7 @@ def rast():
              unit="percent", desc="Novi korisnici iz razdoblja koji su bili aktivni barem još jedan dan."),
         timeseries("Dnevno aktivni po platformi",
                    f"SELECT toStartOfDay(ts, 'Europe/Zagreb') AS time, platform, uniqExact({WHO}) AS korisnika FROM analytics.events WHERE {APP} AND $__timeFilter(ts) GROUP BY time, platform ORDER BY time",
-                   w=12, h=8, bars=True, stack=True),
+                   w=12, h=8, bars=True, stack=True, series="platform"),
         timeseries("Novi i povratni po danu",
                    "SELECT toStartOfDay(ts, 'Europe/Zagreb') AS time,"
                    " uniqExactIf(who, toDate(f.first_ts, 'Europe/Zagreb') = toDate(ts, 'Europe/Zagreb')) AS novi,"
@@ -644,7 +657,7 @@ def sponzori():
         stat("Jedinstvenih slušatelja", f"SELECT uniqExactIf({WHO}, event = 'sponsored_impression') FROM {sp}", w=4),
         timeseries("Po danu",
                    f"SELECT toStartOfDay(ts, 'Europe/Zagreb') AS time, event, count() AS n FROM {sp} GROUP BY time, event ORDER BY time",
-                   w=24, h=8, bars=True),
+                   w=24, h=8, bars=True, series="event"),
         table("Po brendu i slotu",
               "SELECT JSONExtractString(props, 'brand') AS brend, JSONExtractString(props, 'slot_key') AS slot,"
               " countIf(event = 'sponsored_impression') AS prikaza, uniqExactIf(" + WHO + ", event = 'sponsored_impression') AS slusatelja,"
@@ -681,13 +694,13 @@ def zdravlje():
         stat("Bez verzije / platforme", f"SELECT countIf(app_version = '' OR platform = 'unknown') FROM analytics.events WHERE {tr}"),
         timeseries("Događaji po vrsti",
                    f"SELECT $__timeInterval(ts) AS time, event, count() AS n FROM analytics.events WHERE {tr} GROUP BY time, event ORDER BY time",
-                   w=24, h=8, bars=True, stack=True),
+                   w=24, h=8, bars=True, stack=True, series="event"),
         timeseries("Kašnjenje prijema (p50, p95)",
                    f"SELECT $__timeInterval(ts) AS time, quantile(0.5)({lag}) AS p50, quantile(0.95)({lag}) AS p95 FROM analytics.events WHERE {tr} GROUP BY time ORDER BY time",
                    w=12, h=8, unit="ms"),
         timeseries("Uređaji po verziji aplikacije",
                    f"SELECT toStartOfDay(ts, 'Europe/Zagreb') AS time, concat(platform, ' ', app_version) AS verzija, uniqExact(device_id) AS uredaja FROM analytics.events WHERE {APP} AND {tr} GROUP BY time, verzija ORDER BY time",
-                   w=12, h=8, bars=True, stack=True),
+                   w=12, h=8, bars=True, stack=True, series="verzija"),
         table("Po aplikaciji, platformi i verziji",
               f"SELECT app, platform, app_version AS verzija, count() AS dogadaja, uniqExact(device_id) AS uredaja, max(ts) AS zadnji,"
               f" quantile(0.5)({lag}) AS kasnjenje_p50, quantile(0.95)({lag}) AS kasnjenje_p95"
