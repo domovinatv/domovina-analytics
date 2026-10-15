@@ -78,6 +78,10 @@ pozadini, uz Queue kao rezervu (README, „Tok podataka”).
 | `playback_rate` | promjena brzine | `from`, `to`; `route` nosi epizodu |
 | `search` | zatvaranje palete pretrage s nepraznim upitom (jedan po otvaranju, ne po tipki) | `q` (≤ 100 znakova), `persons`/`channels`/`episodes` (broj prikazanih), `picked` (`person`/`channel`/`episode`/`moment`/`all_results`/`video_id`, prazno = ništa), `rank`; `video_id` otvorene epizode |
 | `episode_find` | „Pronađi u epizodi": upit zatvoren brisanjem, novim upitom ili odlaskom s epizode | `q` (≤ 100), `hits`, `jumps` (koliko je puta skočeno iz rezultata) |
+| `push_permission_prompt` | korisnikov tap otvorio sistemski dijalog za obavijesti (iOS/Android) | |
+| `push_permission_result` | ishod tog dijaloga | `result` (`granted`/`denied`/`notDetermined`) |
+| `push_topic_change` | uključena/isključena tema obavijesti (ekran Obavijesti, zvonce kanala, praćenje) | `topic` (`ep_all`, `ep_c_<kanal>`), `on` |
+| `push_open` | tap na push obavijest otvorio aplikaciju | `route` (npr. `/v/<id>`) |
 
 Novi događaj = `Analytics.instance.track('ime', props: {...})` u klijentu.
 Shema se ne mijenja; dokumentiraj ga ovdje. Nova kategorija podatka (npr. slobodan
