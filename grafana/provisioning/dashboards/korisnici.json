@@ -1,0 +1,639 @@
+{
+  "uid": "domovina-korisnici",
+  "title": "Korisnici",
+  "description": "Popis korisnika s osnovnim brojkama; ulaz u profil korisnika.",
+  "tags": [
+    "domovina"
+  ],
+  "timezone": "Europe/Zagreb",
+  "refresh": "1m",
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "schemaVersion": 39,
+  "graphTooltip": 1,
+  "editable": true,
+  "links": [
+    {
+      "title": "Analitika",
+      "type": "dashboards",
+      "tags": [
+        "domovina"
+      ],
+      "asDropdown": false,
+      "includeVars": false,
+      "keepTime": false,
+      "icon": "external link"
+    }
+  ],
+  "templating": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Korisnika",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "w": 4,
+        "h": 4,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT uniqExact(who) FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai' AND $__timeFilter(e.ts))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "description": "Prijavljeni po računu, gosti po uređaju. Gost koji se kasnije prijavio broji se kao taj korisnik.",
+      "id": 1
+    },
+    {
+      "type": "stat",
+      "title": "Novih",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "w": 4,
+        "h": 4,
+        "x": 4,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT countIf(first_ts >= $__fromTime) FROM (SELECT who, min(ts) AS first_ts FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai') GROUP BY who) WHERE who IN (SELECT who FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai' AND $__timeFilter(e.ts)))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "description": "Prvi događaj ikad je u odabranom razdoblju.",
+      "id": 2
+    },
+    {
+      "type": "stat",
+      "title": "Povratnih",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "w": 4,
+        "h": 4,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT countIf(first_ts < $__fromTime) FROM (SELECT who, min(ts) AS first_ts FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai') GROUP BY who) WHERE who IN (SELECT who FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai' AND $__timeFilter(e.ts)))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "id": 3
+    },
+    {
+      "type": "stat",
+      "title": "Prijavljenih",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "w": 4,
+        "h": 4,
+        "x": 12,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT uniqExactIf(who, user_id != '') FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai' AND $__timeFilter(e.ts))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "id": 4
+    },
+    {
+      "type": "stat",
+      "title": "Sesija",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "w": 4,
+        "h": 4,
+        "x": 16,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT uniqExact(session_id) FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai' AND $__timeFilter(e.ts))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "id": 5
+    },
+    {
+      "type": "stat",
+      "title": "Sesija po korisniku",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "w": 4,
+        "h": 4,
+        "x": 20,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT round(uniqExact(session_id) / greatest(uniqExact(who), 1), 1) FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai' AND $__timeFilter(e.ts))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "id": 6
+    },
+    {
+      "type": "table",
+      "title": "Svi korisnici",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "w": 24,
+        "h": 22,
+        "x": 0,
+        "y": 4
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT who AS korisnik, if(maxIf(user_id, user_id != '') != '', 'prijavljen', 'gost') AS racun, f.first_ts AS prvi_put, max(ts) AS zadnji_put, uniqExact(session_id) AS sesija, uniqExact(toDate(ts, 'Europe/Zagreb')) AS aktivnih_dana, countIf(event = 'screen_view') AS ekrana, uniqExactIf(video_id, video_id != '') AS epizoda, uniqExact(device_id) AS uredaja, arrayStringConcat(groupUniqArray(platform), ', ') AS platforme, anyLast(country) AS drzava, anyLast(city) AS grad, domainWithoutWWW(argMinIf(JSONExtractString(props, 'referrer'), ts, event = 'session_start')) AS prvi_izvor FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai' AND $__timeFilter(e.ts)) AS x LEFT JOIN (SELECT who, min(ts) AS first_ts FROM (SELECT e.*, if(e.user_id != '', e.user_id, if(d.u != '', d.u, e.device_id)) AS who FROM analytics.events AS e LEFT JOIN (SELECT device_id, any(user_id) AS u FROM analytics.events WHERE app = 'domovina.ai' AND user_id != '' GROUP BY device_id) AS d USING device_id WHERE e.app = 'domovina.ai') GROUP BY who) AS f USING who GROUP BY who, f.first_ts ORDER BY zadnji_put DESC LIMIT 2000"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "korisnik"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "who"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sesija"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Tijek sesije",
+                    "url": "/d/domovina-sesija/sesija?var-session=${__value.raw}&from=${__data.fields.od_ms}&to=${__data.fields.do_ms}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "video_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epizoda"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kanal"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori kanal",
+                    "url": "https://domovina.ai/c/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "osoba"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori osobu",
+                    "url": "https://domovina.ai/p/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori",
+                    "url": "https://domovina.ai${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_ukupno"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_po_korisniku"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "na_ekranu"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trajanje"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "od_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "do_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Klik na korisnika otvara profil: sve sesije i događaje. Stupci se filtriraju ikonom u zaglavlju.",
+      "id": 7
+    }
+  ]
+}

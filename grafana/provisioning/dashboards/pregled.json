@@ -1,6 +1,10 @@
 {
   "uid": "domovina-pregled",
   "title": "DOMOVINA.ai — pregled",
+  "description": "Što se događa sada i danas.",
+  "tags": [
+    "domovina"
+  ],
   "timezone": "Europe/Zagreb",
   "refresh": "10s",
   "time": {
@@ -8,20 +12,37 @@
     "to": "now"
   },
   "schemaVersion": 39,
+  "graphTooltip": 1,
+  "editable": true,
+  "links": [
+    {
+      "title": "Analitika",
+      "type": "dashboards",
+      "tags": [
+        "domovina"
+      ],
+      "asDropdown": false,
+      "includeVars": false,
+      "keepTime": false,
+      "icon": "external link"
+    }
+  ],
+  "templating": {
+    "list": []
+  },
   "panels": [
     {
-      "id": 1,
-      "title": "Online sada",
       "type": "stat",
+      "title": "Online sada",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 0,
-        "y": 0,
         "w": 4,
-        "h": 5
+        "h": 4,
+        "x": 0,
+        "y": 0
       },
       "targets": [
         {
@@ -35,21 +56,44 @@
           "queryType": "table",
           "rawSql": "SELECT count() AS online FROM analytics.online_now WHERE app = 'domovina.ai'"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "id": 1
     },
     {
-      "id": 2,
-      "title": "Danas: korisnika",
       "type": "stat",
+      "title": "Danas: korisnika",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 4,
-        "y": 0,
         "w": 4,
-        "h": 5
+        "h": 4,
+        "x": 4,
+        "y": 0
       },
       "targets": [
         {
@@ -63,21 +107,44 @@
           "queryType": "table",
           "rawSql": "SELECT uniqExact(if(user_id != '', user_id, device_id)) FROM analytics.events WHERE app = 'domovina.ai' AND toDate(ts, 'Europe/Zagreb') = today()"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "id": 2
     },
     {
-      "id": 3,
-      "title": "Danas: sesija",
       "type": "stat",
+      "title": "Danas: sesija",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 8,
-        "y": 0,
         "w": 4,
-        "h": 5
+        "h": 4,
+        "x": 8,
+        "y": 0
       },
       "targets": [
         {
@@ -91,21 +158,44 @@
           "queryType": "table",
           "rawSql": "SELECT uniqExact(session_id) FROM analytics.events WHERE app = 'domovina.ai' AND toDate(ts, 'Europe/Zagreb') = today()"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "text"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "values": false,
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": ""
+        },
+        "textMode": "value",
+        "colorMode": "none",
+        "graphMode": "none",
+        "justifyMode": "center",
+        "wideLayout": true
+      },
+      "id": 3
     },
     {
-      "id": 4,
-      "title": "Tko je sada u aplikaciji",
       "type": "table",
+      "title": "Tko je sada u aplikaciji",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 12,
-        "y": 0,
         "w": 12,
-        "h": 10
+        "h": 10,
+        "x": 12,
+        "y": 0
       },
       "targets": [
         {
@@ -117,23 +207,291 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT who, user_id != '' AS prijavljen, platform, route, video_id, country, city, last_seen FROM analytics.online_now WHERE app = 'domovina.ai' ORDER BY last_seen DESC"
+          "rawSql": "SELECT who AS korisnik, user_id != '' AS prijavljen, platform, route AS ruta, video_id, country, city, last_seen FROM analytics.online_now WHERE app = 'domovina.ai' ORDER BY last_seen DESC"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "korisnik"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "who"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sesija"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Tijek sesije",
+                    "url": "/d/domovina-sesija/sesija?var-session=${__value.raw}&from=${__data.fields.od_ms}&to=${__data.fields.do_ms}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "video_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epizoda"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kanal"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori kanal",
+                    "url": "https://domovina.ai/c/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "osoba"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori osobu",
+                    "url": "https://domovina.ai/p/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori",
+                    "url": "https://domovina.ai${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_ukupno"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_po_korisniku"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "na_ekranu"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trajanje"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "od_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "do_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "description": "Klik na korisnika otvara njegov profil.",
+      "id": 4
     },
     {
-      "id": 5,
-      "title": "Aktivni korisnici (po satu)",
       "type": "timeseries",
+      "title": "Aktivni korisnici",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 0,
-        "y": 5,
         "w": 12,
-        "h": 9
+        "h": 6,
+        "x": 0,
+        "y": 10
       },
       "targets": [
         {
@@ -147,21 +505,51 @@
           "queryType": "timeseries",
           "rawSql": "SELECT $__timeInterval(ts) AS time, platform, uniqExact(if(user_id != '', user_id, device_id)) AS users FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) GROUP BY time, platform ORDER BY time"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "fillOpacity": 12,
+            "gradientMode": "opacity",
+            "showPoints": "never",
+            "barAlignment": 0,
+            "stacking": {
+              "mode": "none"
+            },
+            "axisSoftMin": 0
+          },
+          "color": {
+            "mode": "palette-classic"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 5
     },
     {
-      "id": 6,
-      "title": "Najgledanije epizode",
       "type": "table",
+      "title": "Najgledanije epizode",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 0,
-        "y": 14,
         "w": 12,
-        "h": 10
+        "h": 10,
+        "x": 12,
+        "y": 10
       },
       "targets": [
         {
@@ -175,21 +563,288 @@
           "queryType": "table",
           "rawSql": "SELECT video_id, count() AS prikazi, uniqExact(if(user_id != '', user_id, device_id)) AS korisnika FROM analytics.events WHERE app = 'domovina.ai' AND event = 'screen_view' AND video_id != '' AND $__timeFilter(ts) GROUP BY video_id ORDER BY prikazi DESC LIMIT 50"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "korisnik"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "who"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sesija"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Tijek sesije",
+                    "url": "/d/domovina-sesija/sesija?var-session=${__value.raw}&from=${__data.fields.od_ms}&to=${__data.fields.do_ms}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "video_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epizoda"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kanal"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori kanal",
+                    "url": "https://domovina.ai/c/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "osoba"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori osobu",
+                    "url": "https://domovina.ai/p/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori",
+                    "url": "https://domovina.ai${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_ukupno"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_po_korisniku"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "na_ekranu"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trajanje"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "od_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "do_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "id": 6
     },
     {
-      "id": 7,
-      "title": "Ekrani",
       "type": "table",
+      "title": "Ekrani",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 12,
-        "y": 10,
         "w": 12,
-        "h": 14
+        "h": 10,
+        "x": 0,
+        "y": 20
       },
       "targets": [
         {
@@ -201,23 +856,290 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT route, count() AS prikazi FROM analytics.events WHERE app = 'domovina.ai' AND event = 'screen_view' AND $__timeFilter(ts) GROUP BY route ORDER BY prikazi DESC LIMIT 50"
+          "rawSql": "SELECT route AS ruta, count() AS prikazi FROM analytics.events WHERE app = 'domovina.ai' AND event = 'screen_view' AND $__timeFilter(ts) GROUP BY route ORDER BY prikazi DESC LIMIT 50"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "korisnik"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "who"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sesija"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Tijek sesije",
+                    "url": "/d/domovina-sesija/sesija?var-session=${__value.raw}&from=${__data.fields.od_ms}&to=${__data.fields.do_ms}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "video_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epizoda"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kanal"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori kanal",
+                    "url": "https://domovina.ai/c/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "osoba"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori osobu",
+                    "url": "https://domovina.ai/p/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori",
+                    "url": "https://domovina.ai${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_ukupno"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_po_korisniku"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "na_ekranu"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trajanje"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "od_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "do_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "id": 7
     },
     {
-      "id": 8,
-      "title": "Platforme i preglednici",
       "type": "table",
+      "title": "Platforme i preglednici",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 0,
-        "y": 24,
         "w": 12,
-        "h": 8
+        "h": 8,
+        "x": 12,
+        "y": 20
       },
       "targets": [
         {
@@ -231,21 +1153,288 @@
           "queryType": "table",
           "rawSql": "SELECT platform, browser, os, uniqExact(device_id) AS uredaja FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) GROUP BY platform, browser, os ORDER BY uredaja DESC"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "korisnik"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "who"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sesija"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Tijek sesije",
+                    "url": "/d/domovina-sesija/sesija?var-session=${__value.raw}&from=${__data.fields.od_ms}&to=${__data.fields.do_ms}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "video_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epizoda"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kanal"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori kanal",
+                    "url": "https://domovina.ai/c/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "osoba"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori osobu",
+                    "url": "https://domovina.ai/p/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori",
+                    "url": "https://domovina.ai${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_ukupno"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_po_korisniku"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "na_ekranu"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trajanje"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "od_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "do_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "id": 8
     },
     {
-      "id": 9,
-      "title": "Države i gradovi",
       "type": "table",
+      "title": "Države i gradovi",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 12,
-        "y": 24,
         "w": 12,
-        "h": 8
+        "h": 8,
+        "x": 0,
+        "y": 30
       },
       "targets": [
         {
@@ -259,21 +1448,288 @@
           "queryType": "table",
           "rawSql": "SELECT country, city, uniqExact(device_id) AS uredaja FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) GROUP BY country, city ORDER BY uredaja DESC LIMIT 50"
         }
-      ]
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "korisnik"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "who"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sesija"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Tijek sesije",
+                    "url": "/d/domovina-sesija/sesija?var-session=${__value.raw}&from=${__data.fields.od_ms}&to=${__data.fields.do_ms}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "video_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epizoda"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kanal"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori kanal",
+                    "url": "https://domovina.ai/c/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "osoba"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori osobu",
+                    "url": "https://domovina.ai/p/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori",
+                    "url": "https://domovina.ai${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_ukupno"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_po_korisniku"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "na_ekranu"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trajanje"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "od_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "do_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
+        }
+      },
+      "id": 9
     },
     {
-      "id": 10,
-      "title": "Odakle dolaze (referrer, utm)",
       "type": "table",
+      "title": "Odakle dolaze (referrer, utm)",
       "datasource": {
         "type": "grafana-clickhouse-datasource",
         "uid": "clickhouse"
       },
       "gridPos": {
-        "x": 0,
-        "y": 32,
         "w": 24,
-        "h": 8
+        "h": 8,
+        "x": 0,
+        "y": 38
       },
       "targets": [
         {
@@ -287,119 +1743,275 @@
           "queryType": "table",
           "rawSql": "SELECT JSONExtractString(props, 'referrer') AS referrer, JSONExtractString(props, 'utm_source') AS utm_source, count() AS sesija FROM analytics.events WHERE app = 'domovina.ai' AND event = 'session_start' AND $__timeFilter(ts) GROUP BY referrer, utm_source ORDER BY sesija DESC LIMIT 50"
         }
-      ]
-    },
-    {
-      "id": 11,
-      "title": "Slušanje po epizodi (odslušano)",
-      "type": "table",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 40,
-        "w": 12,
-        "h": 10
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse"
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "filterable": true,
+            "align": "auto",
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "korisnik"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
           },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "WITH per AS (SELECT session_id, video_id, max(JSONExtractUInt(props, 'listened_s')) AS s FROM analytics.events WHERE app = 'domovina.ai' AND event IN ('playback_pause','playback_progress','playback_end') AND $__timeFilter(ts) GROUP BY session_id, video_id) SELECT video_id, count() AS slusanja, round(sum(s) / 3600, 1) AS sati, round(avg(s) / 60, 1) AS min_prosjek FROM per WHERE s > 0 GROUP BY video_id ORDER BY sati DESC LIMIT 50"
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "title": "Reprodukcija: start → pragovi",
-      "type": "table",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 40,
-        "w": 12,
-        "h": 10
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse"
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "who"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Profil korisnika",
+                    "url": "/d/domovina-korisnik/korisnik?var-who=${__value.raw}&from=now-90d&to=now"
+                  }
+                ]
+              }
+            ]
           },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "SELECT event, if(event = 'playback_progress', toString(JSONExtractUInt(props, 'pct')) || ' %', '') AS prag, count() AS dogadaja, uniqExact(session_id, video_id) AS slusanja FROM analytics.events WHERE app = 'domovina.ai' AND event LIKE 'playback_%' AND $__timeFilter(ts) GROUP BY event, prag ORDER BY event, prag"
-        }
-      ]
-    },
-    {
-      "id": 13,
-      "title": "Upiti pretrage",
-      "type": "table",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse"
-      },
-      "gridPos": {
-        "x": 0,
-        "y": 50,
-        "w": 12,
-        "h": 12
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse"
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "sesija"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Tijek sesije",
+                    "url": "/d/domovina-sesija/sesija?var-session=${__value.raw}&from=${__data.fields.od_ms}&to=${__data.fields.do_ms}"
+                  }
+                ]
+              }
+            ]
           },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "SELECT JSONExtractString(props, 'q') AS upit, count() AS puta, countIf(JSONExtractString(props, 'picked') != '') AS otvoreno, round(avg(JSONExtractUInt(props, 'episodes')), 1) AS epizoda_prosjek FROM analytics.events WHERE app = 'domovina.ai' AND event = 'search' AND $__timeFilter(ts) GROUP BY upit ORDER BY puta DESC LIMIT 100"
-        }
-      ]
-    },
-    {
-      "id": 14,
-      "title": "Pretraga bez otvaranja (nije našao?)",
-      "type": "table",
-      "datasource": {
-        "type": "grafana-clickhouse-datasource",
-        "uid": "clickhouse"
-      },
-      "gridPos": {
-        "x": 12,
-        "y": 50,
-        "w": 12,
-        "h": 12
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "grafana-clickhouse-datasource",
-            "uid": "clickhouse"
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "video_id"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
           },
-          "editorType": "sql",
-          "format": 1,
-          "queryType": "table",
-          "rawSql": "SELECT JSONExtractString(props, 'q') AS upit, count() AS puta, round(avg(JSONExtractUInt(props, 'episodes')), 1) AS epizoda_prosjek FROM analytics.events WHERE app = 'domovina.ai' AND event = 'search' AND JSONExtractString(props, 'picked') = '' AND $__timeFilter(ts) GROUP BY upit ORDER BY puta DESC LIMIT 100"
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "epizoda"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori epizodu",
+                    "url": "https://domovina.ai/v/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kanal"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori kanal",
+                    "url": "https://domovina.ai/c/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "osoba"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori osobu",
+                    "url": "https://domovina.ai/p/${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ruta"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "Otvori",
+                    "url": "https://domovina.ai${__value.raw}",
+                    "targetBlank": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_ukupno"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "vrijeme_po_korisniku"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "na_ekranu"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trajanje"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "dtdurations"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p50"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "kasnjenje_p95"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "ms"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "od_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "do_ms"
+            },
+            "properties": [
+              {
+                "id": "custom.hidden",
+                "value": true
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": {
+          "show": false
         }
-      ]
+      },
+      "id": 10
     }
   ]
 }

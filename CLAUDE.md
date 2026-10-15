@@ -13,6 +13,9 @@ Slika, odluke i lokalni rad: `README.md`. Ugovor: `docs/ugovor.md`.
   adblock popisa (`analytics`, `track`, `collect`, `event`, `beacon`, `pixel`).
 - **Rule (Queue je rezerva)**: glavni put je izravan insert; ne prebacivati
   sve kroz Queue bez pogleda u `docs/troskovi.md`.
+- **Rule (dashboardi se generiraju)**: `grafana/dashboards.py` piše
+  `grafana/provisioning/dashboards/*.json`; JSON se ne uređuje ručno. Upite
+  prije deploya provjeri na produkciji (`--sql`, vidi `docs/dashboardi.md`).
 - Shema: `clickhouse/sql/*.sql` idempotentni; produkcija kroz
   `scripts/ch-apply.sh` NAKON Coolify redeploya.
 - Na serveru je i ClickHouse od `domovina-rag` (24.10) — naš je 25.8. Nikad

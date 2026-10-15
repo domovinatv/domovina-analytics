@@ -22,6 +22,7 @@ Grafana (Coolify) ◄── korisnik `reader`, read-only ────┘
 | [`docs/deploy.md`](docs/deploy.md) | Coolify, Tunnel, Access, Worker; redoslijed i provjere |
 | [`docs/troskovi.md`](docs/troskovi.md) | cijene Cloudflarea, izračun po broju korisnika, ograde |
 | [`docs/upiti.md`](docs/upiti.md) | gotovi SQL upiti (online sada, korisnik, epizoda, zadržavanje) |
+| [`docs/dashboardi.md`](docs/dashboardi.md) | Grafana dashboardi, što koji pokazuje, kako se mijenjaju |
 
 ## Odluke
 
