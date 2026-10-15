@@ -496,7 +496,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -514,24 +514,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -849,7 +831,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -867,24 +849,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -1128,7 +1092,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT session_id AS sesija, min(ts) AS pocetak, sum(dwell_s) AS trajanje, countIf(event = 'screen_view') AS ekrana, uniqExactIf(vid, vid != '') AS epizoda, argMinIf(route, ts, event = 'screen_view') AS ulaz, domainWithoutWWW(anyIf(JSONExtractString(props, 'referrer'), event = 'session_start')) AS izvor, any(platform) AS platforma, anyLast(country) AS drzava, toUnixTimestamp64Milli(min(ts)) - 60000 AS od_ms, toUnixTimestamp64Milli(max(ts)) + 60000 AS do_ms FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND (user_id = ${who:sqlstring} OR (user_id = '' AND (device_id = ${who:sqlstring} OR device_id IN (SELECT device_id FROM analytics.events WHERE user_id = ${who:sqlstring})))) AND $__timeFilter(ts) WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) GROUP BY session_id ORDER BY pocetak DESC LIMIT 500"
+          "rawSql": "SELECT session_id, min(ts) AS pocetak, sum(dwell_s) AS trajanje, countIf(event = 'screen_view') AS ekrana, uniqExactIf(vid, vid != '') AS epizoda, argMinIf(route, ts, event = 'screen_view') AS ulaz, domainWithoutWWW(anyIf(JSONExtractString(props, 'referrer'), event = 'session_start')) AS izvor, any(platform) AS platforma, anyLast(country) AS drzava, toUnixTimestamp64Milli(min(ts)) - 60000 AS od_ms, toUnixTimestamp64Milli(max(ts)) + 60000 AS do_ms FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND (user_id = ${who:sqlstring} OR (user_id = '' AND (device_id = ${who:sqlstring} OR device_id IN (SELECT device_id FROM analytics.events WHERE user_id = ${who:sqlstring})))) AND $__timeFilter(ts) WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) GROUP BY session_id ORDER BY pocetak DESC LIMIT 500"
         }
       ],
       "fieldConfig": {
@@ -1177,7 +1141,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -1195,24 +1159,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -1424,7 +1370,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT vid AS epizoda, sum(dwell_s) AS na_ekranu, countIf(event = 'screen_view') AS otvaranja, min(ts) AS prvi_put, max(ts) AS zadnji_put FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND (user_id = ${who:sqlstring} OR (user_id = '' AND (device_id = ${who:sqlstring} OR device_id IN (SELECT device_id FROM analytics.events WHERE user_id = ${who:sqlstring})))) AND $__timeFilter(ts) WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) WHERE vid != '' GROUP BY vid ORDER BY zadnji_put DESC"
+          "rawSql": "SELECT vid AS video_id, sum(dwell_s) AS na_ekranu, countIf(event = 'screen_view') AS otvaranja, min(ts) AS prvi_put, max(ts) AS zadnji_put FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND (user_id = ${who:sqlstring} OR (user_id = '' AND (device_id = ${who:sqlstring} OR device_id IN (SELECT device_id FROM analytics.events WHERE user_id = ${who:sqlstring})))) AND $__timeFilter(ts) WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) WHERE vid != '' GROUP BY vid ORDER BY zadnji_put DESC"
         }
       ],
       "fieldConfig": {
@@ -1473,7 +1419,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -1491,24 +1437,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -1768,7 +1696,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -1786,24 +1714,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -2014,7 +1924,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT ts AS vrijeme_dogadaja, event, route AS ruta, video_id, channel AS kanal, platform, session_id AS sesija, props, toUnixTimestamp64Milli(ts) - 600000 AS od_ms, toUnixTimestamp64Milli(ts) + 600000 AS do_ms FROM analytics.events WHERE app = 'domovina.ai' AND (user_id = ${who:sqlstring} OR (user_id = '' AND (device_id = ${who:sqlstring} OR device_id IN (SELECT device_id FROM analytics.events WHERE user_id = ${who:sqlstring})))) AND $__timeFilter(ts) ORDER BY ts DESC LIMIT 2000"
+          "rawSql": "SELECT ts AS vrijeme_dogadaja, event, route AS ruta, video_id, channel AS kanal, platform, session_id, props, toUnixTimestamp64Milli(ts) - 600000 AS od_ms, toUnixTimestamp64Milli(ts) + 600000 AS do_ms FROM analytics.events WHERE app = 'domovina.ai' AND (user_id = ${who:sqlstring} OR (user_id = '' AND (device_id = ${who:sqlstring} OR device_id IN (SELECT device_id FROM analytics.events WHERE user_id = ${who:sqlstring})))) AND $__timeFilter(ts) ORDER BY ts DESC LIMIT 2000"
         }
       ],
       "fieldConfig": {
@@ -2063,7 +1973,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -2081,24 +1991,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {

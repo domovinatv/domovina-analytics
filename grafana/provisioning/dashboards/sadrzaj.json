@@ -421,7 +421,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT vid AS epizoda, countIf(event = 'screen_view') AS otvaranja, uniqExact(if(user_id != '', user_id, device_id)) AS gledatelja, sum(dwell_s) AS vrijeme_ukupno, round(sum(dwell_s) / greatest(uniqExact(if(user_id != '', user_id, device_id)), 1)) AS vrijeme_po_korisniku, max(ts) AS zadnji_put FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) WHERE vid != '' GROUP BY vid ORDER BY otvaranja DESC LIMIT 200"
+          "rawSql": "SELECT vid AS video_id, countIf(event = 'screen_view') AS otvaranja, uniqExact(if(user_id != '', user_id, device_id)) AS gledatelja, sum(dwell_s) AS vrijeme_ukupno, round(sum(dwell_s) / greatest(uniqExact(if(user_id != '', user_id, device_id)), 1)) AS vrijeme_po_korisniku, max(ts) AS zadnji_put FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) WHERE vid != '' GROUP BY vid ORDER BY otvaranja DESC LIMIT 200"
         }
       ],
       "fieldConfig": {
@@ -470,7 +470,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -488,24 +488,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -772,7 +754,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -790,24 +772,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -1067,7 +1031,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -1085,24 +1049,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -1362,7 +1308,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -1380,24 +1326,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {

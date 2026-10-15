@@ -86,9 +86,8 @@ L_ROUTE = {"title": "Otvori", "url": SITE + "${__value.raw}", "targetBlank": Tru
 COLUMN_LINKS = {
     "korisnik": L_USER,
     "who": L_USER,
-    "sesija": L_SESSION,
+    "session_id": L_SESSION,
     "video_id": L_VIDEO,
-    "epizoda": L_VIDEO,
     "kanal": L_CHANNEL,
     "osoba": L_PERSON,
     "ruta": L_ROUTE,
@@ -426,7 +425,7 @@ def korisnik():
               f" FROM analytics.events WHERE {tr} GROUP BY toDayOfWeek(ts, 0, 'Europe/Zagreb') AS d, dan ORDER BY d",
               w=12, h=8, heat={"cols": "^\\d\\d$", "width": 30}, filterable=False),
         table("Sesije",
-              "SELECT session_id AS sesija, min(ts) AS pocetak, sum(dwell_s) AS trajanje,"
+              "SELECT session_id, min(ts) AS pocetak, sum(dwell_s) AS trajanje,"
               " countIf(event = 'screen_view') AS ekrana, uniqExactIf(vid, vid != '') AS epizoda,"
               " argMinIf(route, ts, event = 'screen_view') AS ulaz,"
               " domainWithoutWWW(anyIf(JSONExtractString(props, 'referrer'), event = 'session_start')) AS izvor,"
@@ -435,7 +434,7 @@ def korisnik():
               f" FROM {st} GROUP BY session_id ORDER BY pocetak DESC LIMIT 500",
               w=24, h=10, desc="Klik na sesiju otvara njezin tijek. Trajanje je procjena iz razmaka između događaja."),
         table("Epizode koje je otvorio",
-              "SELECT vid AS epizoda, sum(dwell_s) AS na_ekranu, countIf(event = 'screen_view') AS otvaranja, min(ts) AS prvi_put, max(ts) AS zadnji_put"
+              "SELECT vid AS video_id, sum(dwell_s) AS na_ekranu, countIf(event = 'screen_view') AS otvaranja, min(ts) AS prvi_put, max(ts) AS zadnji_put"
               f" FROM {st} WHERE vid != '' GROUP BY vid ORDER BY zadnji_put DESC",
               w=12, h=10),
         table("Kanali i osobe",
@@ -443,7 +442,7 @@ def korisnik():
               f" FROM {st} WHERE ch != '' OR person != '' GROUP BY vrsta, slug ORDER BY zadnji_put DESC",
               w=12, h=10),
         table("Svi događaji",
-              "SELECT ts AS vrijeme_dogadaja, event, route AS ruta, video_id, channel AS kanal, platform, session_id AS sesija, props,"
+              "SELECT ts AS vrijeme_dogadaja, event, route AS ruta, video_id, channel AS kanal, platform, session_id, props,"
               " toUnixTimestamp64Milli(ts) - 600000 AS od_ms, toUnixTimestamp64Milli(ts) + 600000 AS do_ms"
               f" FROM analytics.events WHERE {tr} ORDER BY ts DESC LIMIT 2000",
               w=24, h=16),
@@ -501,7 +500,7 @@ def sadrzaj():
                    f"SELECT $__timeInterval(ts) AS time, {SCREEN_KIND} AS vrsta, count() AS n FROM {sv} GROUP BY time, vrsta ORDER BY time",
                    w=24, h=8, bars=True, stack=True),
         table("Epizode",
-              "SELECT vid AS epizoda, countIf(event = 'screen_view') AS otvaranja, uniqExact(" + WHO + ") AS gledatelja,"
+              "SELECT vid AS video_id, countIf(event = 'screen_view') AS otvaranja, uniqExact(" + WHO + ") AS gledatelja,"
               " sum(dwell_s) AS vrijeme_ukupno, round(sum(dwell_s) / greatest(uniqExact(" + WHO + "), 1)) AS vrijeme_po_korisniku,"
               " max(ts) AS zadnji_put"
               f" FROM {st} WHERE vid != '' GROUP BY vid ORDER BY otvaranja DESC LIMIT 200",

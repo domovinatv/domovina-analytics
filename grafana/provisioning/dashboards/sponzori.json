@@ -469,7 +469,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -487,24 +487,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
@@ -764,7 +746,7 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "sesija"
+              "options": "session_id"
             },
             "properties": [
               {
@@ -782,24 +764,6 @@
             "matcher": {
               "id": "byName",
               "options": "video_id"
-            },
-            "properties": [
-              {
-                "id": "links",
-                "value": [
-                  {
-                    "title": "Otvori epizodu",
-                    "url": "https://domovina.ai/v/${__value.raw}",
-                    "targetBlank": true
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "epizoda"
             },
             "properties": [
               {
