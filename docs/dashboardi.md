@@ -44,3 +44,22 @@ python3 grafana/dashboards.py --sql <user_id> <session_id> > /tmp/q.sql
 ```
 
 Pa commit, push i Coolify **Redeploy** (provisioning je ugrađen u image).
+
+## Stanje 15. 10. 2026.
+
+- Svih 92 upita provjereno na produkciji kao `reader`: prosjek 12 ms,
+  najviše 51 ms (`system.query_log`, čita ga samo `admin`). Prvo
+  učitavanje dashboarda nakon Coolify redeploya traje 10–20 s jer se
+  Grafana i plugin hladno dižu; baza nije uzrok.
+- Heartbeat: produkcija je imala 1 heartbeat na 10 sesija jer Flutter web
+  javlja lažni `hidden` dok je tab vidljiv. Popravljeno u `domovina.ai`
+  `c8fd12c`, ali to stiže tek s web deployem. Nakon deploya panel
+  „Heartbeat po sesiji” (Zdravlje) treba biti znatno iznad 0,1. Dok nije,
+  `screen_time` ostaje na gornjoj granici od 300 s.
+- Klijent od v2.0.188 šalje i `playback_start`, `playback_pause`,
+  `playback_resume`, `playback_seek`, `playback_progress`, `playback_end`,
+  `playback_rate`, `search` i `episode_find`. Još ih nema ni u
+  `docs/ugovor.md` ni na dashboardima. Na Zdravlju se zato pojavljuju kao
+  „nepoznati događaji” dok se ne dodaju u `KNOWN` u `grafana/dashboards.py`.
+  S njima „vrijeme na epizodi” može postati stvarno odslušano vrijeme
+  (`playback_end` nosi `listened_s` i `end_pct`).
