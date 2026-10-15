@@ -70,6 +70,21 @@ pozadini, uz Queue kao rezervu (README, „Tok podataka”).
 | `app_background` | odlazak u pozadinu / skriven tab | |
 | `identify` / `sign_out` | promjena prijavljenog korisnika | |
 | `sponsored_impression`, `sponsored_play_through`, `sponsored_click` | plaćeni sponzorski trenuci | `props.slot_key`, `brand`, `start`, `end` |
+| `playback_start` | prvi `playing=true` nakon otvaranja epizode | `video_id`; `props.surface` (`v`/`m`/`tv`), `position_s`, `duration_s`, `wait_ms` (od otvaranja do zvuka) |
+| `playback_pause` / `playback_resume` | promjena `playing` nakon starta | `position_s`; pauza nosi i kumulativni `listened_s` |
+| `playback_seek` | ručni skok > 2 s; niz skokova (povlačenje slidera) javlja se jednom, 1,5 s nakon zadnjeg | `from_s`, `to_s`. Resume-seek u prvih 8 s nije skok |
+| `playback_progress` | prag 10/25/50/75/90 % dosegnut **slušanjem** (preskočen skokom se ne javlja) | `pct`, `listened_s` |
+| `playback_end` | zatvaranje epizode, ako je reprodukcija krenula | `listened_s`, `duration_s`, `end_pct`. Zatvoren tab ga ne pošalje — odslušano po (sesija, epizoda) je zato `max(listened_s)` preko pause/progress/end |
+| `playback_rate` | promjena brzine | `from`, `to`; `route` nosi epizodu |
+| `search` | zatvaranje palete pretrage s nepraznim upitom (jedan po otvaranju, ne po tipki) | `q` (≤ 100 znakova), `persons`/`channels`/`episodes` (broj prikazanih), `picked` (`person`/`channel`/`episode`/`moment`/`all_results`/`video_id`, prazno = ništa), `rank`; `video_id` otvorene epizode |
+| `episode_find` | „Pronađi u epizodi": upit zatvoren brisanjem, novim upitom ili odlaskom s epizode | `q` (≤ 100), `hits`, `jumps` (koliko je puta skočeno iz rezultata) |
 
 Novi događaj = `Analytics.instance.track('ime', props: {...})` u klijentu.
-Shema se ne mijenja; dokumentiraj ga ovdje.
+Shema se ne mijenja; dokumentiraj ga ovdje. Nova kategorija podatka (npr. slobodan
+tekst kao `q`) mijenja i politiku privatnosti u `domovina.ai`
+(`legalPrivacyAnalytics*`, `docs/compliance/`).
+
+Reprodukciju računa `PlaybackAnalytics`
+(`podcast_core/lib/services/analytics/playback_analytics.dart`) iz
+`player.stream.playing` i `position`, pa hvata sve putanje (naše trake,
+media_kitov tap, tipkovnica, lock screen).

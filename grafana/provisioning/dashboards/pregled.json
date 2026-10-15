@@ -288,6 +288,118 @@
           "rawSql": "SELECT JSONExtractString(props, 'referrer') AS referrer, JSONExtractString(props, 'utm_source') AS utm_source, count() AS sesija FROM analytics.events WHERE app = 'domovina.ai' AND event = 'session_start' AND $__timeFilter(ts) GROUP BY referrer, utm_source ORDER BY sesija DESC LIMIT 50"
         }
       ]
+    },
+    {
+      "id": 11,
+      "title": "Slušanje po epizodi (odslušano)",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 40,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "WITH per AS (SELECT session_id, video_id, max(JSONExtractUInt(props, 'listened_s')) AS s FROM analytics.events WHERE app = 'domovina.ai' AND event IN ('playback_pause','playback_progress','playback_end') AND $__timeFilter(ts) GROUP BY session_id, video_id) SELECT video_id, count() AS slusanja, round(sum(s) / 3600, 1) AS sati, round(avg(s) / 60, 1) AS min_prosjek FROM per WHERE s > 0 GROUP BY video_id ORDER BY sati DESC LIMIT 50"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Reprodukcija: start → pragovi",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 40,
+        "w": 12,
+        "h": 10
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT event, if(event = 'playback_progress', toString(JSONExtractUInt(props, 'pct')) || ' %', '') AS prag, count() AS dogadaja, uniqExact(session_id, video_id) AS slusanja FROM analytics.events WHERE app = 'domovina.ai' AND event LIKE 'playback_%' AND $__timeFilter(ts) GROUP BY event, prag ORDER BY event, prag"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Upiti pretrage",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 50,
+        "w": 12,
+        "h": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT JSONExtractString(props, 'q') AS upit, count() AS puta, countIf(JSONExtractString(props, 'picked') != '') AS otvoreno, round(avg(JSONExtractUInt(props, 'episodes')), 1) AS epizoda_prosjek FROM analytics.events WHERE app = 'domovina.ai' AND event = 'search' AND $__timeFilter(ts) GROUP BY upit ORDER BY puta DESC LIMIT 100"
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Pretraga bez otvaranja (nije našao?)",
+      "type": "table",
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 50,
+        "w": 12,
+        "h": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorType": "sql",
+          "format": 1,
+          "queryType": "table",
+          "rawSql": "SELECT JSONExtractString(props, 'q') AS upit, count() AS puta, round(avg(JSONExtractUInt(props, 'episodes')), 1) AS epizoda_prosjek FROM analytics.events WHERE app = 'domovina.ai' AND event = 'search' AND JSONExtractString(props, 'picked') = '' AND $__timeFilter(ts) GROUP BY upit ORDER BY puta DESC LIMIT 100"
+        }
+      ]
     }
   ]
 }
