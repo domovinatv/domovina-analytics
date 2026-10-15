@@ -88,3 +88,34 @@ Reprodukciju računa `PlaybackAnalytics`
 (`podcast_core/lib/services/analytics/playback_analytics.dart`) iz
 `player.stream.playing` i `position`, pa hvata sve putanje (naše trake,
 media_kitov tap, tipkovnica, lock screen).
+
+## Kašnjenje do Grafane
+
+Izmjereno 15. 10. 2026. nad 50 web događaja (v2.0.187), kao
+`received_at − ts`:
+
+| događaj | p50 | p90 | p99 |
+|---|---|---|---|
+| `screen_view` | 5,7 s | 22,8 s | 29,6 s |
+| `session_start` | 5,4 s | 5,8 s | 5,8 s |
+| `app_background` | 0,1 s | 0,8 s | 9,8 s |
+
+Zbroj tri dijela: klijent drži red do 30 s (`Analytics.flushInterval`; prvi
+batch nakon 5 s, `app_background` odmah), ClickHouse `async_insert` do ~1 s
+(`async_insert_busy_timeout_max_ms`), Grafana osvježava svakih 10 s. Ukupno
+obično 5–15 s, najviše ~40 s. „Online sada” gleda prozor od 90 s, pa korisnik
+nestane do 90 s nakon odlaska.
+
+Najjeftinija poluga je klijent: kraći `flushInterval` ili flush na
+`screen_view` (`minFlushGap` 5 s štiti server). Cijena je 2–3× više zahtjeva;
+rate limit 20/min po uređaju to i dalje pokriva.
+
+Reprodukcija upita:
+
+```sql
+SELECT event, count() n,
+  quantile(0.5)(dateDiff('millisecond', ts, received_at)) / 1000 AS p50_s,
+  quantile(0.9)(dateDiff('millisecond', ts, received_at)) / 1000 AS p90_s
+FROM analytics.events WHERE received_at > now() - INTERVAL 1 DAY
+GROUP BY event ORDER BY n DESC;
+```
