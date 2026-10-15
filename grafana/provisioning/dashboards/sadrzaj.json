@@ -371,8 +371,8 @@
           "custom": {
             "drawStyle": "bars",
             "lineWidth": 2,
-            "fillOpacity": 70,
-            "gradientMode": "opacity",
+            "fillOpacity": 85,
+            "gradientMode": "none",
             "showPoints": "never",
             "barAlignment": 0,
             "stacking": {

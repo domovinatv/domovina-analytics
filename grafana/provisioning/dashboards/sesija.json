@@ -59,7 +59,7 @@
       },
       "gridPos": {
         "w": 24,
-        "h": 3,
+        "h": 4,
         "x": 0,
         "y": 0
       },
@@ -338,7 +338,7 @@
         "w": 6,
         "h": 4,
         "x": 0,
-        "y": 3
+        "y": 4
       },
       "targets": [
         {
@@ -370,7 +370,7 @@
           ],
           "fields": "/.*/"
         },
-        "textMode": "value_and_name",
+        "textMode": "value",
         "colorMode": "none",
         "graphMode": "none",
         "justifyMode": "center",
@@ -389,7 +389,7 @@
         "w": 6,
         "h": 4,
         "x": 6,
-        "y": 3
+        "y": 4
       },
       "targets": [
         {
@@ -442,7 +442,7 @@
         "w": 6,
         "h": 4,
         "x": 12,
-        "y": 3
+        "y": 4
       },
       "targets": [
         {
@@ -493,7 +493,7 @@
         "w": 6,
         "h": 4,
         "x": 18,
-        "y": 3
+        "y": 4
       },
       "targets": [
         {
@@ -544,7 +544,7 @@
         "w": 24,
         "h": 5,
         "x": 0,
-        "y": 7
+        "y": 8
       },
       "targets": [
         {
@@ -556,7 +556,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT ts AS time, if(event = 'app_background', '(pozadina)', screen) AS ekran FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND session_id = ${session:sqlstring} WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) ORDER BY ts"
+          "rawSql": "SELECT time, ekran FROM (SELECT ts AS time, toNullable(if(event = 'app_background', '(pozadina)', screen)) AS ekran FROM (SELECT *, least(dateDiff('second', ts, leadInFrame(ts, 1, ts) OVER w), 300) AS dwell_s, ifNull(anyLast(nullIf(route, '')) OVER w_cur, '') AS screen, extract(screen, '^/(?:v|m|yt)/([^/?#]+)') AS vid, extract(screen, '^/c/([^/?#]+)') AS ch, extract(screen, '^/p/([^/?#]+)') AS person FROM analytics.events WHERE app = 'domovina.ai' AND session_id = ${session:sqlstring} WINDOW w AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING), w_cur AS (PARTITION BY session_id ORDER BY ts ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)) WHERE screen != '' OR event = 'app_background' UNION ALL SELECT max(ts) + toIntervalSecond(1), NULL FROM analytics.events WHERE app = 'domovina.ai' AND session_id = ${session:sqlstring}) ORDER BY time"
         }
       ],
       "fieldConfig": {
@@ -597,7 +597,7 @@
         "w": 24,
         "h": 18,
         "x": 0,
-        "y": 12
+        "y": 13
       },
       "targets": [
         {

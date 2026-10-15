@@ -372,8 +372,8 @@
           "custom": {
             "drawStyle": "bars",
             "lineWidth": 2,
-            "fillOpacity": 70,
-            "gradientMode": "opacity",
+            "fillOpacity": 85,
+            "gradientMode": "none",
             "showPoints": "never",
             "barAlignment": 0,
             "stacking": {
@@ -430,8 +430,8 @@
           "custom": {
             "drawStyle": "bars",
             "lineWidth": 2,
-            "fillOpacity": 70,
-            "gradientMode": "opacity",
+            "fillOpacity": 85,
+            "gradientMode": "none",
             "showPoints": "never",
             "barAlignment": 0,
             "stacking": {
@@ -753,6 +753,22 @@
               {
                 "id": "custom.align",
                 "value": "center"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "",
+                        "color": "transparent",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
               },
               {
                 "id": "unit",
@@ -1354,7 +1370,7 @@
           "editorType": "sql",
           "format": 1,
           "queryType": "table",
-          "rawSql": "SELECT ['pon','uto','sri','čet','pet','sub','ned'][toDayOfWeek(ts, 0, 'Europe/Zagreb')] AS dan, countIf(toHour(ts, 'Europe/Zagreb') = 0) AS `00`, countIf(toHour(ts, 'Europe/Zagreb') = 1) AS `01`, countIf(toHour(ts, 'Europe/Zagreb') = 2) AS `02`, countIf(toHour(ts, 'Europe/Zagreb') = 3) AS `03`, countIf(toHour(ts, 'Europe/Zagreb') = 4) AS `04`, countIf(toHour(ts, 'Europe/Zagreb') = 5) AS `05`, countIf(toHour(ts, 'Europe/Zagreb') = 6) AS `06`, countIf(toHour(ts, 'Europe/Zagreb') = 7) AS `07`, countIf(toHour(ts, 'Europe/Zagreb') = 8) AS `08`, countIf(toHour(ts, 'Europe/Zagreb') = 9) AS `09`, countIf(toHour(ts, 'Europe/Zagreb') = 10) AS `10`, countIf(toHour(ts, 'Europe/Zagreb') = 11) AS `11`, countIf(toHour(ts, 'Europe/Zagreb') = 12) AS `12`, countIf(toHour(ts, 'Europe/Zagreb') = 13) AS `13`, countIf(toHour(ts, 'Europe/Zagreb') = 14) AS `14`, countIf(toHour(ts, 'Europe/Zagreb') = 15) AS `15`, countIf(toHour(ts, 'Europe/Zagreb') = 16) AS `16`, countIf(toHour(ts, 'Europe/Zagreb') = 17) AS `17`, countIf(toHour(ts, 'Europe/Zagreb') = 18) AS `18`, countIf(toHour(ts, 'Europe/Zagreb') = 19) AS `19`, countIf(toHour(ts, 'Europe/Zagreb') = 20) AS `20`, countIf(toHour(ts, 'Europe/Zagreb') = 21) AS `21`, countIf(toHour(ts, 'Europe/Zagreb') = 22) AS `22`, countIf(toHour(ts, 'Europe/Zagreb') = 23) AS `23` FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) AND event = 'screen_view' GROUP BY toDayOfWeek(ts, 0, 'Europe/Zagreb') AS d, dan ORDER BY d"
+          "rawSql": "SELECT ['pon','uto','sri','čet','pet','sub','ned'][toDayOfWeek(ts, 0, 'Europe/Zagreb')] AS dan, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 0), 0) AS `00`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 1), 0) AS `01`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 2), 0) AS `02`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 3), 0) AS `03`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 4), 0) AS `04`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 5), 0) AS `05`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 6), 0) AS `06`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 7), 0) AS `07`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 8), 0) AS `08`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 9), 0) AS `09`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 10), 0) AS `10`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 11), 0) AS `11`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 12), 0) AS `12`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 13), 0) AS `13`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 14), 0) AS `14`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 15), 0) AS `15`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 16), 0) AS `16`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 17), 0) AS `17`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 18), 0) AS `18`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 19), 0) AS `19`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 20), 0) AS `20`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 21), 0) AS `21`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 22), 0) AS `22`, nullIf(countIf(toHour(ts, 'Europe/Zagreb') = 23), 0) AS `23` FROM analytics.events WHERE app = 'domovina.ai' AND $__timeFilter(ts) AND event = 'screen_view' GROUP BY toDayOfWeek(ts, 0, 'Europe/Zagreb') AS d, dan ORDER BY d"
         }
       ],
       "fieldConfig": {
@@ -1627,6 +1643,22 @@
               {
                 "id": "custom.align",
                 "value": "center"
+              },
+              {
+                "id": "mappings",
+                "value": [
+                  {
+                    "type": "special",
+                    "options": {
+                      "match": "null",
+                      "result": {
+                        "text": "",
+                        "color": "transparent",
+                        "index": 0
+                      }
+                    }
+                  }
+                ]
               }
             ]
           }

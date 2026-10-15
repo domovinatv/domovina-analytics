@@ -141,7 +141,7 @@ def stat(title, sql, w=4, h=4, unit=None, desc=None, text=False):
         "stat", title, sql, w, h, desc,
         options={
             "reduceOptions": {"values": False, "calcs": ["lastNotNull"], "fields": "/.*/" if text else ""},
-            "textMode": "value_and_name" if text else "value",
+            "textMode": "value",
             "colorMode": "none",
             "graphMode": "none",
             "justifyMode": "center",
@@ -169,6 +169,8 @@ def table(title, sql, w=12, h=10, desc=None, heat=None, sort=None, filterable=Tr
                 {"id": "min", "value": 0},
                 {"id": "custom.width", "value": heat.get("width", 46)},
                 {"id": "custom.align", "value": "center"},
+                # Prazna ćelija (nula ili tjedan koji još nije prošao) bez boje.
+                {"id": "mappings", "value": [{"type": "special", "options": {"match": "null", "result": {"text": "", "color": "transparent", "index": 0}}}]},
             ] + ([{"id": "unit", "value": heat["unit"]}] if heat.get("unit") else [])
             + ([{"id": "max", "value": heat["max"]}] if "max" in heat else []),
         })
@@ -187,8 +189,8 @@ def timeseries(title, sql, w=12, h=8, desc=None, bars=False, stack=False, unit=N
     custom = {
         "drawStyle": "bars" if bars else "line",
         "lineWidth": 2,
-        "fillOpacity": 70 if bars else 12,
-        "gradientMode": "opacity",
+        "fillOpacity": 85 if bars else 12,
+        "gradientMode": "none" if bars else "opacity",
         "showPoints": "never",
         "barAlignment": 0,
         "stacking": {"mode": "normal" if stack else "none"},
@@ -395,7 +397,7 @@ def korisnik():
     allu = f"analytics.events WHERE {USER}"
     tr = f"{USER} AND $__timeFilter(ts)"
     st = screen_time(tr)
-    hours = ", ".join(f"countIf(toHour(ts, 'Europe/Zagreb') = {h}) AS `{h:02d}`" for h in range(24))
+    hours = ", ".join(f"nullIf(countIf(toHour(ts, 'Europe/Zagreb') = {h}), 0) AS `{h:02d}`" for h in range(24))
     var = query_var(
         "who", "Korisnik ili uređaj",
         f"SELECT who FROM (SELECT {WHO} AS who, max(ts) AS l FROM analytics.events WHERE {APP} AND ts > now() - INTERVAL 90 DAY GROUP BY who ORDER BY l DESC LIMIT 1000)",
@@ -443,7 +445,8 @@ def korisnik():
               w=12, h=10),
         table("Svi događaji",
               "SELECT ts AS vrijeme_dogadaja, event, route AS ruta, video_id, channel AS kanal, platform, session_id, props,"
-              " toUnixTimestamp64Milli(ts) - 600000 AS od_ms, toUnixTimestamp64Milli(ts) + 600000 AS do_ms"
+              " toUnixTimestamp64Milli(min(ts) OVER (PARTITION BY session_id)) - 60000 AS od_ms,"
+              " toUnixTimestamp64Milli(max(ts) OVER (PARTITION BY session_id)) + 60000 AS do_ms"
               f" FROM analytics.events WHERE {tr} ORDER BY ts DESC LIMIT 2000",
               w=24, h=16),
     ], time="now-90d", refresh="", variables=[var], desc="Profil jednog korisnika: uređaji, sesije, epizode i svi događaji.")
@@ -465,13 +468,15 @@ def sesija():
               " domainWithoutWWW(anyIf(JSONExtractString(props, 'referrer'), event = 'session_start')) AS izvor,"
               " anyIf(JSONExtractString(props, 'utm_source'), event = 'session_start') AS utm_source"
               f" FROM analytics.events WHERE {s}",
-              w=24, h=3, filterable=False),
+              w=24, h=4, filterable=False),
         stat("Početak", f"SELECT formatDateTime(min(ts), '%d.%m.%Y. %H:%i:%S', 'Europe/Zagreb') AS pocetak FROM analytics.events WHERE {s}", w=6, text=True),
         stat("Trajanje", f"SELECT sum(dwell_s) FROM {st}", w=6, unit="dtdurations", desc="Procjena iz razmaka između događaja."),
         stat("Ekrana", f"SELECT countIf(event = 'screen_view') FROM analytics.events WHERE {s}", w=6),
         stat("Događaja", f"SELECT count() FROM analytics.events WHERE {s}", w=6),
         state_timeline("Ekrani kroz vrijeme",
-                       f"SELECT ts AS time, if(event = 'app_background', '(pozadina)', screen) AS ekran FROM {st} ORDER BY ts",
+                       "SELECT time, ekran FROM ("
+                       f"SELECT ts AS time, toNullable(if(event = 'app_background', '(pozadina)', screen)) AS ekran FROM {st} WHERE screen != '' OR event = 'app_background'"
+                       f" UNION ALL SELECT max(ts) + toIntervalSecond(1), NULL FROM analytics.events WHERE {s}) ORDER BY time",
                        h=5, desc="Vremenska crta ekrana; razdoblje dashboarda je postavljeno na trajanje sesije."),
         table("Tijek",
               "SELECT ts AS vrijeme_dogadaja,"
@@ -530,7 +535,7 @@ def rast():
         f"if(w0 + INTERVAL {k} WEEK <= toMonday(today()), round(100 * countIf(has(ws, w0 + INTERVAL {k} WEEK)) / count(), 1), NULL) AS `T{k}`"
         for k in range(1, 13)
     )
-    hours = ", ".join(f"countIf(toHour(ts, 'Europe/Zagreb') = {h}) AS `{h:02d}`" for h in range(24))
+    hours = ", ".join(f"nullIf(countIf(toHour(ts, 'Europe/Zagreb') = {h}), 0) AS `{h:02d}`" for h in range(24))
     firsts = f"(SELECT who, min(ts) AS first_ts, argMinIf(JSONExtractString(props, 'referrer'), ts, event = 'session_start') AS ref, argMinIf(JSONExtractString(props, 'utm_source'), ts, event = 'session_start') AS utm, argMin(platform, ts) AS plat, argMin(country, ts) AS drz FROM {allev} GROUP BY who)"
     return dashboard("domovina-rast", "Rast i zadržavanje", [
         stat("DAU (danas)", f"SELECT uniqExact({WHO}) FROM analytics.events WHERE {APP} AND toDate(ts, 'Europe/Zagreb') = today()"),
